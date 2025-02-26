@@ -13,8 +13,10 @@ function App() {
   const [lyrics, setLyrics] = useState(null);
   const [selectedSong, setSelectedSong] = useState(null);
   const [countdown, setCountdown] = useState("");
+  const [blankedLyrics, setBlankedLyrics] = useState(null);
+  const [removedWords, setRemovedWords] = useState({});
+  const [userAnswers, setUserAnswers] = useState({});
 
-  // Countdown Timer
   useEffect(() => {
     const updateCountdown = () => {
       const now = new Date();
@@ -39,7 +41,7 @@ function App() {
     return () => clearInterval(interval);
   }, []);
 
-  // Search Function
+  // search Function
   const handleSearch = async () => {
     if (!searchTerm.trim()) return;
 
@@ -60,18 +62,84 @@ function App() {
     }
   };
 
-  // Fetch Lyrics and Hide Search Results
+  // fetch lyrics and genrate blanks
   const fetchLyrics = async (song) => {
     setSelectedSong(song);
     setLyrics("Loading lyrics...");
-    setSongs([]); // Hide search results when clicking a song
+    setSongs([]); // hide search results when clicking a song
 
     try {
       const response = await axios.get(`http://localhost:5000/lyrics?song_url=${encodeURIComponent(song.result.url)}`);
-      setLyrics(response.data.lyrics || "Lyrics not found.");
+      const lyricsText = response.data.lyrics || "Lyrics not found.";
+      setLyrics(lyricsText);
+
+      generateBlanks(lyricsText, 5); // Pick 5 words
     } catch (error) {
       console.error("Error fetching lyrics:", error);
       setLyrics("Failed to load lyrics.");
+    }
+  };
+
+  // Generate Blanks (for now blanks are answers)
+  const generateBlanks = (text, numBlanks) => {
+    let words = text.split(" ");
+    let blankIndexes = new Set();
+
+    while (blankIndexes.size < numBlanks) {
+      let randIndex = Math.floor(Math.random() * words.length);
+      let cleanWord = words[randIndex].replace(/[^a-zA-Zăîâșț]/g, ""); // remove punctuation for now
+
+      if (cleanWord.length > 3) {
+        blankIndexes.add(randIndex);
+      }
+    }
+
+    let newRemovedWords = {};
+    let newBlankedLyrics = words.map((word, index) => {
+      let cleanWord = word.replace(/[^a-zA-Zăîâșț]/g, ""); // remove punctuation for now
+      if (blankIndexes.has(index)) {
+        newRemovedWords[index] = cleanWord;
+        return (
+          <span key={index}>
+            <input
+              type="text"
+              className="blank-input"
+              data-index={index}
+              placeholder={`____ (${cleanWord})`}
+              onChange={(e) => handleInputChange(e, index)}
+              onKeyDown={(e) => checkAnswer(e, index)}
+              style={{
+                border: "2px solid white",
+                backgroundColor: userAnswers[index] === cleanWord ? "lightgreen" : "white",
+                color: userAnswers[index] === cleanWord ? "black" : "black",
+                fontWeight: userAnswers[index] === cleanWord ? "bold" : "normal",
+              }}
+            />{" "}
+          </span>
+        );
+      }
+      return word + " ";
+    });
+
+    setRemovedWords(newRemovedWords);
+    setBlankedLyrics(newBlankedLyrics);
+  };
+
+  // input
+  const handleInputChange = (e, index) => {
+    setUserAnswers((prev) => ({ ...prev, [index]: e.target.value }));
+  };
+
+  // check answer Enter
+  const checkAnswer = (e, index) => {
+    if (e.key === "Enter") {
+      if (userAnswers[index] === removedWords[index]) {
+        e.target.style.backgroundColor = "lightgreen"; // correct
+        e.target.style.color = "black";
+      } else {
+        e.target.style.backgroundColor = "red"; // incorrect
+        e.target.style.color = "white";
+      }
     }
   };
 
@@ -87,7 +155,7 @@ function App() {
         Hi Ștefan! See you in <span className="countdown">{countdown}</span> 💙
       </p>
 
-      {/* Search Bar + Images */}
+      {/* Search Bar and images */}
       <div className="search-container">
         <img src={gintama1} alt="Gintama Left" className="search-image" />
         <div className="search-box">
@@ -102,12 +170,12 @@ function App() {
         <img src={gintama2} alt="Gintama Right" className="search-image" />
       </div>
 
-      {/* Instructional Text */}
-<p className="search-instructions">
-  🔍 Search format: <strong>Artist - Song Title</strong> (e.g., "Satoshi - Noaptea pe la 3")
-</p>
+      {/* instructional text */}
+      <p className="search-instructions">
+        🔍 Search format: <strong>Artist - Song Title</strong> (e.g., "Satoshi - Noaptea pe la 3")
+      </p>
 
-      {/* Display search results (only if no lyrics are displayed) */}
+      {/* display search results */}
       {songs.length > 0 && !lyrics && (
         <div className="results-container">
           <h2>Results:</h2>
@@ -120,15 +188,15 @@ function App() {
         </div>
       )}
 
-      {/* Display lyrics (Only if a song is selected) */}
-      {lyrics && selectedSong && (
+      {/* Display lyrics */}
+      {blankedLyrics && selectedSong && (
         <div className="lyrics-container">
           <h2>{selectedSong.result.full_title}</h2>
-          <pre className="lyrics-text">{lyrics}</pre>
+          <p>{blankedLyrics}</p>
         </div>
       )}
 
-      {/* GIF at bottom */}
+      {/* GIF */}
       <div className="gif-container">
         <img src={NBoe} alt="Funny GIF" className="gif-style" />
       </div>
