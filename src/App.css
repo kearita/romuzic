@@ -1,0 +1,104 @@
+/* Apply the background to the whole screen */
+body, html {
+  margin: 0;
+  padding: 0;
+  width: 100%;
+  height: 100%;
+  background-color: #222; /* Dark mode */
+  color: white;
+}
+
+/* root container takes up the full height */
+#root {
+  width: 100%;
+  min-height: 100vh; /* Min height to cover the full viewport */
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+}
+
+/* Animated Bouncing Notes */
+@keyframes bounce {
+  0%, 100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-8px);
+  }
+}
+
+.bouncing-note-left,
+.bouncing-note-right {
+  display: inline-block;
+  font-size: 1.5em;
+  margin: 0 5px;
+  animation: bounce 0.4s infinite cubic-bezier(0.6, 0, 0.4, 1);
+  will-change: transform;
+}
+
+/* Adjusting the search container */
+.search-container {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 20px; /* Space between elements */
+  margin-top: 20px;
+}
+
+/* Ensuring images maintain size */
+.search-image {
+  width: 120px;
+  height: auto;
+  border-radius: 10px;
+  transition: transform 0.3s ease-in-out;
+}
+
+.search-image:hover {
+  transform: scale(1.1);
+}
+
+/* GIF at the bottom */
+.gif-container {
+  margin-top: 50px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.gif-style {
+  width: 250px;
+  height: auto;
+  border-radius: 10px;
+}
+
+/* Countdown message styling */
+.countdown-message {
+  font-size: 1.2rem;
+  color: white;
+  margin-top: 5px;
+}
+
+.countdown {
+  font-weight: bold;
+  color: lightblue;
+}
+
+/* Lyrics Styling */
+.lyrics-container {
+  margin-top: 20px;
+  padding: 15px;
+  background-color: #333;  /* Dark background */
+  border-radius: 10px;
+  max-width: 700px; /* Limit width */
+  text-align: left;  /* Align text to left */
+  overflow-wrap: break-word;
+}
+
+.lyrics-text {
+  white-space: pre-wrap; /* Ensures lyrics wrap properly */
+  font-size: 0.68rem;
+  line-height: 1.5;
+  color: white;
+}
